@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.beneville.grandfatherclock.MainActivity">
+
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_row_1"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05"
+        tools:layout_editor_absoluteY="29dp"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_left_outside"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1625"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="48dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_right_outside"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8375"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="336dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_left_inside"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3875"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="144dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_right_inside"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.6125"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="240dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_row_2"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.23" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_row_3"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.41" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_volume_control_top"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.62" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_volume_control_bottom"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.67" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline13"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.72" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline12"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.9"
+        tools:layout_editor_absoluteY="511dp"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <com.beneville.grandfatherclock.Views.MenuIconButton
+        android:id="@+id/menu_icon_shuffle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_left_outside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_left_inside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_row_1"
+        app:menu_icon="@drawable/ic_menu_repeat"
+        android:clickable="true"/>
+
+    <com.beneville.grandfatherclock.Views.MenuIconButton
+        android:id="@+id/menu_icon_movie"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_right_inside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_right_outside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_row_1"
+        app:menu_icon="@drawable/ic_menu_movie" />
+
+    <com.beneville.grandfatherclock.Views.MenuIconButton
+        android:id="@+id/menu_icon_music"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_left_outside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_left_inside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_row_2"
+        app:menu_icon="@drawable/ic_menu_music" />
+
+    <com.beneville.grandfatherclock.Views.MenuIconButton
+        android:id="@+id/menu_icon_book"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_right_inside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_right_outside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_row_2"
+        app:menu_icon="@drawable/ic_menu_book" />
+
+
+    <com.beneville.grandfatherclock.Views.MenuIconButton
+        android:id="@+id/menu_icon_bell"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_left_outside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_left_inside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_row_3"
+        app:menu_icon="@drawable/ic_menu_bell" />
+
+    <com.beneville.grandfatherclock.Views.MenuIconButton
+        android:id="@+id/menu_icon_sound"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_right_inside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_right_outside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_row_3"
+        app:menu_icon="@drawable/ic_menu_sound" />
+
+    <ImageView
+        android:id="@+id/volume_icon_0"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:srcCompat="@drawable/ic_menu_volume_0"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_left_outside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_volume_control_top"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_volume_control_bottom" />
+
+    <ImageView
+        android:id="@+id/volume_icon_100"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:srcCompat="@drawable/ic_menu_volume_100"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_right_outside"
+        app:layout_constraintTop_toTopOf="@+id/guideline_volume_control_top"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_volume_control_bottom" />
+
+    <SeekBar
+        android:id="@+id/volume_seekbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@+id/volume_icon_0"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintRight_toLeftOf="@+id/volume_icon_100"
+        android:layout_marginRight="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_volume_control_bottom"
+        app:layout_constraintTop_toTopOf="@+id/guideline_volume_control_top"
+        android:thumbTint="@android:color/black"
+        android:backgroundTint="@color/volumeSeekbarBackground"
+        android:progressTint="@color/volumeSeekbarProgress" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline_left_outside"
+        app:layout_constraintRight_toLeftOf="@+id/guideline_right_outside"
+        app:layout_constraintTop_toTopOf="@+id/guideline13"
+        android:weightSum="3"
+        android:gravity="center">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/control_reverse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                app:srcCompat="@drawable/ic_menu_skip_reverse" />
+
+        </FrameLayout>
+
+
+        <com.beneville.grandfatherclock.Views.MenuIconButton
+            android:id="@+id/control_play"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            app:menu_icon="@drawable/ic_menu_play" />
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/control_forward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:layout_gravity="right"
+                app:srcCompat="@drawable/ic_menu_skip_forward" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView15"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:srcCompat="@drawable/ic_menu_search"
+        app:layout_constraintTop_toTopOf="@+id/guideline12"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline14"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline15" />
+
+    <ImageView
+        android:id="@+id/imageView16"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginBottom="0dp"
+        app:srcCompat="@drawable/ic_menu_menu"
+        app:layout_constraintBottom_toTopOf="@+id/guideline14"
+        app:layout_constraintTop_toTopOf="@+id/guideline12"
+        android:layout_marginTop="0dp"
+        app:layout_constraintRight_toLeftOf="@+id/guideline16"
+        android:layout_marginRight="0dp" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline14"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline15"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.06" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline16"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.93" />
+
+
+</android.support.constraint.ConstraintLayout>
