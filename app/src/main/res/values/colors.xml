@@ -2,7 +2,11 @@
 <resources>
     <color name="colorPrimary">#3e3e3e</color>
     <color name="colorPrimaryDark">#8e8e8e</color>
-    <color name="colorAccent">#ff4080</color>
+    <color name="colorAccent">#8e8e8e</color>
     <color name="volumeSeekbarBackground">#7C7C7C</color>
     <color name="volumeSeekbarProgress">#9C9C9C</color>
+    <color name="borderGray">#d0d0d0</color>
+    <color name="grayText">#7C7C7C</color>
+    <color name="topBar">#999999</color>
+    <color name="selectorHighlight">#FF0000</color>
 </resources>

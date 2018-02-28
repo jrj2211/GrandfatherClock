@@ -2,5 +2,6 @@
 <resources>
     <declare-styleable name="MenuIconButton">
         <attr name="menu_icon" format="integer" />
+        <attr name="menu_icon_on" format="integer" />
     </declare-styleable>
 </resources>
