@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
-import android.util.Log;
 
 /**
  * Created by joeja on 11/14/2017.
@@ -22,6 +21,7 @@ public class BluetoothHelper {
     public static final String TAG = BluetoothHelper.class.getSimpleName();
     public static final int PERMISSION_REQUEST_BLUETOOTH = 100;
     public static final int REQUEST_ENABLE_BT = 100;
+
     private BluetoothAdapter mBluetoothAdapter;
     private Activity mActivity;
     private DeviceController mController;
@@ -98,11 +98,15 @@ public class BluetoothHelper {
             status = STATUS.SCAN;
         } else if (mController.getStatus() == BluetoothProfile.STATE_CONNECTING) {
             status = STATUS.CONNECTING;
-        } else if (mController.isReady() == false) {
-            status = STATUS.DOWNLOADING;
+        } else if (mController.songsDownloaded() == false) {
+            status = STATUS.DOWNLOAD_SONGS;
         }
 
         return status;
+    }
+
+    public boolean needsSetupStep() {
+        return getStatus() != BluetoothHelper.STATUS.NONE;
     }
 
     public enum STATUS {
@@ -112,7 +116,7 @@ public class BluetoothHelper {
         ENABLE_BLUETOOTH,
         SCAN,
         CONNECTING,
-        DOWNLOADING,
+        DOWNLOAD_SONGS,
     }
 
     public interface BluetoothStateChangedCallback {

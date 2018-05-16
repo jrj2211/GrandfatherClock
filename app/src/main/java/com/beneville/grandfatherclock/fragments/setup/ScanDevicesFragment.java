@@ -20,6 +20,8 @@ import com.beneville.grandfatherclock.helpers.BleDeviceScanner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by joeja on 1/22/2018.
@@ -116,12 +118,14 @@ public class ScanDevicesFragment extends Fragment {
     }
 
     public void foundDevice(BluetoothDevice device) {
-        if (!mDevices.contains(device)) {
+        if (device != null && device.getName() != null && !mDevices.contains(device)) {
             // Find only grandfather clock devices
-            //if (getActivity().getString(R.string.bluetooth_device_name).equalsIgnoreCase(device.getName())) {
+            Pattern pattern = Pattern.compile("grandfather|gfc ", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(device.getName());
+            if (matcher.find()) {
                 // Store the device
                 mDevices.add(device);
-            //}
+            }
         }
     }
 

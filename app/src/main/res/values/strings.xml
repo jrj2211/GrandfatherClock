@@ -9,7 +9,9 @@
     <string name='gatt_file_name_count_characteristic'>35b02f0e-766a-4d04-a260-f2ff752ac947</string>
     <string name='gatt_file_name_index_characteristic'>6700bd85-3b4a-4692-8fd0-17716b1b9c27</string>
     <string name='gatt_file_name_characteristic'>6700bd85-3b4a-4692-8fd0-17716b1b9c28</string>
+    <string name='gatt_file_name_fragment_count_characteristic'>6700bd85-3b4a-4692-8fd0-17716b1b9ca1</string>
     <string name='gatt_file_name_artist_characteristic'>6700bd85-3b4a-4692-8fd0-17716b1b9c29</string>
+    <string name='gatt_file_name_artist_fragment_count_characteristic'>6700bd85-3b4a-4692-8fd0-17716b1b9ca2</string>
     <string name='gatt_file_name_metadata_title_characteristic'>cd664b2f-74cc-41fd-92f2-281514a60f6e</string>
     <string name='gatt_file_name_metadata_artist_characteristic'>e4eb230b-d9f1-4a03-876c-3c9d021a415b</string>
     <string name='gatt_file_name_metadata_comment_characteristic'>19faedb0-7ac5-4341-96d9-ad03cf7f82e5</string>
@@ -23,10 +25,12 @@
     <string name='gatt_playback_stop_characteristic'>8b74b359-4e18-46b8-acd7-3ed3c98daac1</string>
     <string name='gatt_playback_volume_characteristic'>69f3b3a0-d22d-4a0a-9e25-2786c035dc4a</string>
     <string name='gatt_playback_mode_characteristic'>69f3b3a0-d22d-4a0a-9e25-2786c035dc4b</string>
-    <string name='gatt_playback_mode_index_count_characteristic'>69f3b3a0-d22d-4a0a-9e25-2786c035dc4c</string>
-    <string name='gatt_playback_mode_index_list_characteristic'>69f3b3a0-d22d-4a0a-9e25-2786c035dc4d</string>
+    <string name='gatt_playback_mode_count_characteristic'>69f3b3a0-d22d-4a0a-9e25-2786c035dc4c</string>
+    <string name='gatt_playback_mode_first_index_characteristic'>69f3b3a0-d22d-4a0a-9e25-2786c035dc4d</string>
+    <string name='gatt_playback_next_characteristic'>4e67a82d-fec9-4262-86a7-a8e4b50d9ba2</string>
+    <string name='gatt_playback_previous_characteristic'>8b74b359-4e18-46b8-acd7-3ed3c98dbac1</string>
 
-    <string name='gatt_calibration_service'>7786085d-8c58-4da8-9046-2b318ffd301c</string>
+    <string name='gatt_calibration_service'>7786085d-8c58-4da8-9046-2b318ffd301d</string>
     <string name='gatt_calibration_calibrate_characteristic'>7786085d-8c58-4da8-9046-2b318ffd301d</string>
     <string name='gatt_calibration_am_pm_characteristic'>7786085d-8c58-4da8-9046-2b318ffd301e</string>
 

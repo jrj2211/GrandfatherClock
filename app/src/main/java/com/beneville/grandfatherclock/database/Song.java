@@ -9,6 +9,8 @@ import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.TypeConverters;
 
+import com.beneville.grandfatherclock.helpers.DeviceController;
+
 import java.util.List;
 
 /**
@@ -21,15 +23,17 @@ public class Song {
     public final static String TABLE = "song";
     @PrimaryKey(autoGenerate = true)
     private int sid;
+    @ColumnInfo(name = "boardIndex")
+    private int boardIndex;
     @ColumnInfo(name = "title")
-    private String title;
+    private String title = "";
     @ColumnInfo(name = "artist")
-    private String artist;
+    private String artist = "";
     @ColumnInfo(name = "genre")
-    private String genre;
+    private String genre = "";
     @ColumnInfo(name = "mode")
     @TypeConverters(AppDatabase.Converters.class)
-    private ModeType mode;
+    private ModeType mode = ModeType.SONG;
     @ColumnInfo(name = "disabled")
     private boolean disabled;
 
@@ -51,6 +55,14 @@ public class Song {
 
     public void setSid(int sid) {
         this.sid = sid;
+    }
+
+    public int getBoardIndex() {
+        return this.boardIndex;
+    }
+
+    public void setBoardIndex(int boardIndex) {
+        this.boardIndex = boardIndex;
     }
 
     public boolean isDisabled() {
@@ -85,12 +97,20 @@ public class Song {
         this.artist = artist;
     }
 
+    public void appendArtist(String artist) {
+        this.artist += artist;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void appendTitle(String title) {
+        this.title += title;
     }
 
     public enum ModeType {
@@ -105,6 +125,17 @@ public class Song {
             mode = i;
         }
 
+        public static ModeType GetFromPlaybackMode(DeviceController.PlaybackMode playbackMode) {
+            switch (playbackMode) {
+                case BOOK:
+                    return Song.ModeType.BOOK;
+                case MOVIE:
+                    return Song.ModeType.MOVIE;
+                default:
+                    return Song.ModeType.SONG;
+            }
+        }
+
         public int getMode() {
             return mode;
         }
@@ -113,14 +144,20 @@ public class Song {
     @android.arch.persistence.room.Dao
     public interface Dao {
 
-        @Query("SELECT * FROM " + Song.TABLE + " ORDER BY title ASC")
+        @Query("SELECT * FROM " + Song.TABLE + " ORDER BY artist, title ASC")
         List<Song> getAll();
 
-        @Query("SELECT * FROM " + Song.TABLE + " WHERE mode=:modeType ORDER BY title ASC")
+        @Query("SELECT * FROM " + Song.TABLE + " WHERE mode=:modeType ORDER BY artist, title ASC")
         List<Song> getAllByType(ModeType modeType);
 
-        @Query("SELECT * FROM " + Song.TABLE + " WHERE title LIKE :text ORDER BY title ASC")
+        @Query("SELECT * FROM " + Song.TABLE + " WHERE title LIKE :text OR artist LIKE :text ORDER BY artist, title ASC")
         List<Song> search(String text);
+
+        @Query("SELECT * FROM " + Song.TABLE + " WHERE boardIndex = :boardIndex LIMIT 1")
+        Song getSongByIndex(int boardIndex);
+
+        @Query("UPDATE " + Song.TABLE + " SET disabled=:disabled WHERE boardIndex=:index")
+        void setDisabled(int index, boolean disabled);
 
         @Insert
         void insertAll(Song... songs);

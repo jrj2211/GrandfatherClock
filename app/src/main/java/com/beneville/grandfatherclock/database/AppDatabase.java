@@ -33,6 +33,15 @@ public abstract class AppDatabase extends RoomDatabase {
         });
     }
 
+    public void updateDisabled(final Song song) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                songDao().setDisabled(song.getBoardIndex(), song.isDisabled());
+            }
+        });
+    }
+
     static public class Converters {
         @TypeConverter
         public Song.ModeType toMode(int mode) {

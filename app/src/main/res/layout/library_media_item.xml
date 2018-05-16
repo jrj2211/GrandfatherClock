@@ -1,55 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical">
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/library_item_icon"
-        android:layout_weight=".175"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="5dp"
+        android:layout_weight=".175"
         android:adjustViewBounds="true"
-        android:src="@drawable/ic_movie"
         android:background="@drawable/circle_border_light"
         android:padding="10dp"
-        android:layout_marginLeft="1dp"
-        android:layout_marginRight="1dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp" />
+        android:src="@drawable/ic_movie"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
         android:layout_weight=".825"
-        android:background="@drawable/border_bottom_gray"
+        android:gravity="center"
         android:orientation="vertical"
-        android:layout_marginLeft="15dp"
         android:paddingBottom="10dp"
         android:paddingTop="10dp"
-        android:id="@+id/linearLayout2">
-
-        <TextView
-            android:id="@+id/library_item_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Abba"
-            android:textSize="16dp"
-            android:layout_marginBottom="2dp"
-            android:textColor="@android:color/black"
-            android:fontFamily="@font/avenir"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/library_item_artist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
             android:fontFamily="@font/avenir"
-            android:text="Money"
+            android:textColor="@android:color/black"
+            android:textSize="16dp" />
+
+        <TextView
+            android:id="@+id/library_item_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/avenir"
             android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/library_item_disabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:fontFamily="@font/avenir"
+            android:text="File Disabled"
+            android:textSize="14dp"
+            android:visibility="gone" />
 
     </LinearLayout>
 
-</LinearLayout>
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.18" />
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/border_bottom_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/library_item_icon"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </FrameLayout>
+
+</android.support.constraint.ConstraintLayout>

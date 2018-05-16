@@ -13,6 +13,7 @@ public abstract class ListItem {
 
     protected String name;
     protected View.OnClickListener onClickListener;
+    protected View.OnLongClickListener onLongClickListener;
 
     public ListItem(View.OnClickListener onClickListener, String name) {
         setName(name);
@@ -35,5 +36,13 @@ public abstract class ListItem {
 
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
+    }
+
+    public View.OnLongClickListener getOnLongClickListener() {
+        return this.onLongClickListener;
+    }
+
+    public void setOnLongClickListener(View.OnLongClickListener longClickListener) {
+        onLongClickListener = longClickListener;
     }
 }

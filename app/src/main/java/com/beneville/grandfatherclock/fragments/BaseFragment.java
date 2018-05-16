@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.beneville.grandfatherclock.R;
 import com.beneville.grandfatherclock.helpers.BluetoothHelper;
@@ -16,7 +17,7 @@ import com.beneville.grandfatherclock.helpers.BluetoothHelper;
 public class BaseFragment {
 
     public static Fragment startFragment(Context context, Fragment newFragment) {
-        return startFragment(context, newFragment, null);
+        return startFragment(context, newFragment, newFragment.getClass().getSimpleName());
     }
 
     public static Fragment startFragment(Context context, Fragment newFragment, String tag) {
@@ -25,7 +26,7 @@ public class BaseFragment {
 
         // Start the transactions
         FragmentTransaction transaction = fragManager.beginTransaction();
-        transaction.replace(R.id.fragment_container, newFragment);
+        transaction.replace(R.id.fragment_container, newFragment, tag);
 
         // If there is already a fragment then we want it on the backstack
         if (currentFragment != null) {
@@ -35,7 +36,19 @@ public class BaseFragment {
         // Show it
         transaction.commitAllowingStateLoss();
 
+
         return currentFragment;
+    }
+
+    public static boolean isSetupStepShowing(Context context) {
+        FragmentManager fragManager = ((AppCompatActivity) context).getSupportFragmentManager();
+        Fragment currentFragment = (Fragment) fragManager.findFragmentById(R.id.fragment_container);
+
+        if (currentFragment.getTag().equals(SetupFragment.class.getSimpleName())) {
+            return true;
+        }
+
+        return false;
     }
 
     public static Fragment showSetupFragment(Context context, BluetoothHelper bluetoothHelper) {
@@ -51,6 +64,8 @@ public class BaseFragment {
 
         // Show it
         transaction.commitAllowingStateLoss();
+
+        Log.e("DSF", "Started fragment of type " + setupFragment.getClass().getSimpleName());
 
         return setupFragment;
     }

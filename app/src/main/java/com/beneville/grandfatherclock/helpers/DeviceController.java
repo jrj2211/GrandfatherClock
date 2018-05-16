@@ -12,13 +12,17 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.math.MathUtils;
 import android.util.Log;
 
 import com.beneville.grandfatherclock.R;
 import com.beneville.grandfatherclock.services.BleService;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 /**
@@ -29,6 +33,9 @@ public class DeviceController {
 
     private static final String TAG = DeviceController.class.getSimpleName();
 
+    private Context mContext;
+
+    // Services
     private BleService mBleService;
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -49,13 +56,25 @@ public class DeviceController {
         }
     };
     private List<BluetoothGattService> mGattServices = new ArrayList<>();
-    private DeviceStatusChangeListener mStatusChangeListener;
     private BluetoothGattService mGattPlaybackService;
     private BluetoothGattService mGattFileNameService;
     private BluetoothGattService mGattCalibrationService;
-    private Context mContext;
-    private int curVolume = 0;
+    // Song Downloading
+    private Queue<PlaybackMode> playbackModesToLoad = new ArrayDeque<PlaybackMode>();
     private SyncSongs syncSongs;
+    // Current Device State
+    private int numberOfSongs = 0;
+    private PlaybackMode currentMode = PlaybackMode.ALL;
+    private int currentSongIndex = -1;
+    private boolean currentPlaybackState = false;
+    private int currentVolume = 70;
+    // Setup listeners
+    private DeviceStatusChangeListener mStatusChangeListener;
+    private DataDownloadedListener mDataDownloadedListener;
+    private SongChangedListener mSongChangedListener;
+    private VolumeChangedListener mVolumeChangedListener;
+    private PlaybackStateListener mPlaybackStateListener;
+    private ModeChangedListener mModeChangedListener;
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -75,31 +94,54 @@ public class DeviceController {
                 getServices();
                 notifyStatusChange();
             } else if (BleService.ACTION_DATA_AVAILABLE.equals(action)) {
-                if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_mode_characteristic))) {
-
-                }
-
                 if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_count_characteristic))) {
-                    byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
-                    if (bytes.length > 0) {
-                        syncSongs.setNumFiles(bytes[0]);
-                        syncSongs.getSongInfo(DeviceController.this);
+                    numberOfSongs = GetIntFromIntent(intent);
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_mode_first_index_characteristic))) {
+                    Log.e(TAG, "Got file first index: " + GetIntFromIntent(intent));
+                    ModeIndexes.setPlaybackStartIndex(currentMode, GetIntFromIntent(intent));
+                    if (playbackModesToLoad.size() > 0) {
+                        // Loading playback modes to download songs
+                        getGenreIndex(playbackModesToLoad.remove());
+                    } else {
+                        if (!AppSettings.getInstance(mContext).getSongsDownloaded()) {
+                            // No songs so download if necessary
+                            if (!syncSongs.isDownloading()) {
+                                // Start downloading the songs
+                                syncSongs.startSync(numberOfSongs, DeviceController.this);
+                            }
+                        }
                     }
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_fragment_count_characteristic))) {
+                    syncSongs.getTitle(GetIntFromIntent(intent), DeviceController.this);
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_artist_fragment_count_characteristic))) {
+                    syncSongs.getArtist(GetIntFromIntent(intent), DeviceController.this);
                 } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_characteristic))) {
                     byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
-                    syncSongs.setTitle(bytes.toString(), DeviceController.this);
+                    syncSongs.setTitle(new String(bytes), DeviceController.this);
                 } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_artist_characteristic))) {
                     byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
-                    syncSongs.setArtist(bytes.toString(), DeviceController.this);
-                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_metadata_genre_characteristic))) {
-                    byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
-                    syncSongs.setGenre(bytes.toString(), DeviceController.this);
-                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_disable_read_characteristic))) {
-                    byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
-                    if (bytes.length > 0) {
-                        syncSongs.setDisabled((bytes[0] == 1 ? true : false), DeviceController.this);
-                    }
+                    syncSongs.setArtist(new String(bytes), DeviceController.this);
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_volume_characteristic))) {
+                    setCurrentVolume(GetIntFromIntent(intent));
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_mode_characteristic))) {
+                    setCurrentPlaybackMode(PlaybackMode.fromInteger(GetIntFromIntent(intent)));
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_index_characteristic))) {
+                    setCurrentSongIndex(GetIntFromIntent(intent));
+                    Log.e(TAG, "Got song index: " + GetIntFromIntent(intent));
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_start_characteristic))) {
+                    boolean isPlaying = GetIntFromIntent(intent) % 100 == 1;
+                    setCurrentPlaybackState(isPlaying);
                 }
+            }
+        }
+    };
+    private SyncSongs.CompleteListener mSongsDownloadedListener = new SyncSongs.CompleteListener() {
+        @Override
+        public void OnComplete() {
+            GetDefaultsAndSubscribe();
+
+            if (mDataDownloadedListener != null) {
+                mDataDownloadedListener.onDownloaded();
             }
         }
     };
@@ -110,6 +152,36 @@ public class DeviceController {
         mContext = context;
         mStatusChangeListener = statusChangeListener;
         syncSongs = new SyncSongs(context);
+        syncSongs.setCompleteListener(mSongsDownloadedListener);
+    }
+
+    public SyncSongs getSongSync() {
+        return syncSongs;
+    }
+
+    public PlaybackMode getCurrentMode() {
+        return currentMode;
+    }
+
+    public int GetIntFromIntent(Intent intent) {
+        try {
+            byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
+            switch (bytes.length) {
+                case 0:
+                    return 0;
+                case 1:
+                    return bytes[0];
+                case 2:
+                    return ByteBuffer.wrap(bytes).getShort();
+                case 4:
+                    return ByteBuffer.wrap(bytes).getInt();
+                default:
+                    throw new Exception("Cant get int from " + bytes.length + " bytes");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get int from characteristic");
+        }
+        return 0;
     }
 
     public void registerGattReceiver(Context context) {
@@ -129,17 +201,18 @@ public class DeviceController {
         for (BluetoothGattService service : mGattServices) {
             if (service.getUuid().toString().equals(mContext.getString(R.string.gatt_calibration_service))) {
                 mGattCalibrationService = service;
+                Log.d(TAG, "Found calibration service");
             } else if (service.getUuid().toString().equals(mContext.getString(R.string.gatt_playback_service))) {
                 mGattPlaybackService = service;
+                Log.d(TAG, "Found playback service");
             } else if (service.getUuid().toString().equals(mContext.getString(R.string.gatt_file_name_service))) {
                 mGattFileNameService = service;
+                Log.d(TAG, "Found file name service");
             }
         }
 
-        subscribePlaybackMode(true);
-        getSongCount();
-
-        FakeDatabase db = new FakeDatabase(mContext);
+        readSongCount();
+        startSongDownload();
 
         // TODO : REMOVE
         final Handler handler = new Handler();
@@ -151,80 +224,215 @@ public class DeviceController {
         }, 2000);
     }
 
+    private void GetDefaultsAndSubscribe() {
+        // Subscribe to changes
+        mBleService.queueSubscribeCharacteristic(mGattPlaybackService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_playback_mode_characteristic))), true);
+        mBleService.queueSubscribeCharacteristic(mGattPlaybackService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_playback_volume_characteristic))), true);
+        mBleService.queueSubscribeCharacteristic(mGattPlaybackService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_playback_start_characteristic))), true);
+        mBleService.queueSubscribeCharacteristic(mGattFileNameService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_file_name_index_characteristic))), true);
+
+        // Read Defaults
+        mBleService.queueReadCharacteristic(mGattPlaybackService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_playback_mode_characteristic))));
+        mBleService.queueReadCharacteristic(mGattPlaybackService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_playback_volume_characteristic))));
+        mBleService.queueReadCharacteristic(mGattPlaybackService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_playback_start_characteristic))));
+        mBleService.queueReadCharacteristic(mGattFileNameService.getCharacteristic(UUID.fromString(mContext.getString(R.string.gatt_file_name_index_characteristic))));
+    }
+
     private BluetoothGattCharacteristic getCharacteristicFromService(int resource, BluetoothGattService service) {
         BluetoothGattCharacteristic characteristic = null;
+
         if (service != null) {
-            service.getCharacteristic(UUID.fromString(mContext.getString(resource)));
+            characteristic = service.getCharacteristic(UUID.fromString(mContext.getString(resource)));
         }
 
         return characteristic;
     }
 
-    public void setAudioVolume(int volume) {
-        if (volume < 0) {
-            volume = 0;
-        } else if (volume > 100) {
-            volume = 100;
-        }
-
-        Log.e(TAG, "Setting volume to " + volume);
-
-        if (curVolume != volume) {
-            BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_volume_characteristic, mGattPlaybackService);
-            mBleService.queueWriteCharacteristic(characteristic, volume);
-            curVolume = volume;
+    private void getGenreIndex(PlaybackMode mode) {
+        if (mode != null) {
+            writePlaybackMode(mode);
+            readModeFirstIndex();
         }
     }
 
-    public void setPlayControl(boolean toggled) {
-        Log.e(TAG, "Playback  " + toggled);
-        if (toggled) {
-            BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_start_characteristic, mGattPlaybackService);
-            mBleService.queueWriteCharacteristic(characteristic, true);
+    public void playSong(int index) {
+        currentSongIndex = index;
+        writeSongIndex(index);
+        writePlayControl(true);
+    }
+
+    public void startSongDownload() {
+        if (AppSettings.getInstance(mContext).getSongsDownloaded()) {
+            // Songs already downloaded so no need to resync
+            syncSongs.setComplete();
+            GetDefaultsAndSubscribe();
         } else {
-            BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_stop_characteristic, mGattPlaybackService);
-            mBleService.queueWriteCharacteristic(characteristic, false);
+            // Load the indexes for each genre
+            playbackModesToLoad.add(PlaybackMode.BOOK);
+            playbackModesToLoad.add(PlaybackMode.MOVIE);
+            playbackModesToLoad.add(PlaybackMode.MUSIC);
+
+            getGenreIndex(playbackModesToLoad.remove());
         }
     }
 
-    public void setPlaybackMode(PlaybackMode mode) {
-        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_stop_characteristic, mGattPlaybackService);
-        mBleService.queueWriteCharacteristic(characteristic, mode.getValue());
+    public int getCurrentSongIndex() {
+        return currentSongIndex;
     }
 
-    public void subscribePlaybackMode(boolean subscribe) {
+    private void setCurrentSongIndex(int index) {
+        if (index != currentSongIndex) {
+            currentSongIndex = index;
+            Log.w(TAG, "Changing song to " + currentSongIndex);
+            if (mSongChangedListener != null) {
+                mSongChangedListener.onChange(currentSongIndex);
+            }
+        }
+    }
+
+    public int getCurrentVolume() {
+        return currentVolume;
+    }
+
+    private void setCurrentVolume(int volume) {
+        if (volume != currentVolume) {
+            currentVolume = volume;
+            Log.w(TAG, "Changing volume to " + currentVolume);
+            if (mVolumeChangedListener != null) {
+                mVolumeChangedListener.onChange(currentVolume);
+            }
+        }
+    }
+
+    public boolean getPlaybackControl() {
+        return currentPlaybackState;
+    }
+
+    private void setCurrentPlaybackMode(PlaybackMode mode) {
+        if (mode != currentMode) {
+            currentMode = mode;
+            Log.w(TAG, "Changing mode to " + currentMode);
+            if (mModeChangedListener != null) {
+                mModeChangedListener.onChange(currentMode);
+            }
+        }
+    }
+
+    private void setCurrentPlaybackState(boolean playing) {
+        if (playing != currentPlaybackState) {
+            currentPlaybackState = playing;
+
+            if (mPlaybackStateListener != null) {
+                mPlaybackStateListener.onChange(playing);
+            }
+        }
+    }
+
+    public void writeNext(boolean play) {
+        if (currentMode != PlaybackMode.MUTE && currentMode != PlaybackMode.BELL) {
+            Log.w(TAG, "Writing next command");
+            BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_next_characteristic, mGattPlaybackService);
+            mBleService.queueWriteCharacteristic(characteristic, true);
+            writePlayControl(play);
+        }
+    }
+
+    public void writePrevious(boolean play) {
+        if (currentMode != PlaybackMode.MUTE && currentMode != PlaybackMode.BELL) {
+            Log.w(TAG, "Writing previous command");
+            BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_previous_characteristic, mGattPlaybackService);
+            mBleService.queueWriteCharacteristic(characteristic, true);
+            writePlayControl(play);
+        }
+    }
+
+    public void writeAudioVolume(int volume) {
+        // Keep volume from 0 to 100
+        volume = MathUtils.clamp(volume, 0, 100);
+
+        Log.w(TAG, "Writing audio volume " + currentVolume);
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_volume_characteristic, mGattPlaybackService);
+        mBleService.queueWriteCharacteristic(characteristic, volume);
+        setCurrentVolume(volume);
+    }
+
+    public void writePlayControl(boolean toggled) {
+        BluetoothGattCharacteristic characteristic;
+
+        if (toggled) {
+            characteristic = getCharacteristicFromService(R.string.gatt_playback_start_characteristic, mGattPlaybackService);
+        } else {
+            characteristic = getCharacteristicFromService(R.string.gatt_playback_stop_characteristic, mGattPlaybackService);
+        }
+
+        Log.w(TAG, "Writing playback " + toggled);
+        mBleService.queueWriteCharacteristic(characteristic, true);
+        setCurrentPlaybackState(toggled);
+    }
+
+    public void writePlaybackMode(PlaybackMode mode) {
+        Log.w(TAG, "Writing mode: " + mode.getValue());
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_mode_characteristic, mGattPlaybackService);
-        mBleService.queueSubscribeCharacteristic(characteristic, subscribe);
+        mBleService.queueWriteCharacteristic(characteristic, mode.getValue());
+        readCurrentSongIndex();
+        setCurrentPlaybackMode(mode);
+        setCurrentPlaybackState(false);
     }
 
-    public void getSongCount() {
+    public void readModeFirstIndex() {
+        Log.w(TAG, "Reading mode first index");
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_mode_first_index_characteristic, mGattPlaybackService);
+        mBleService.queueReadCharacteristic(characteristic);
+    }
+
+    public void readCurrentSongIndex() {
+        Log.w(TAG, "Reading current song index");
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_index_characteristic, mGattFileNameService);
+        mBleService.queueReadCharacteristic(characteristic);
+    }
+
+    public void readSongCount() {
+        Log.w(TAG, "Reading file count");
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_count_characteristic, mGattFileNameService);
         mBleService.queueReadCharacteristic(characteristic);
     }
 
-    public void getSongTitle() {
+    public void readSongTitleFragmentCount() {
+        Log.w(TAG, "Reading title fragment count");
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_fragment_count_characteristic, mGattFileNameService);
+        mBleService.queueReadCharacteristic(characteristic);
+    }
+
+    public void readSongArtistFragmentCount() {
+        Log.w(TAG, "Reading artist fragment count");
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_artist_fragment_count_characteristic, mGattFileNameService);
+        mBleService.queueReadCharacteristic(characteristic);
+    }
+
+    public void readSongTitle() {
+        Log.w(TAG, "Reading title");
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_characteristic, mGattFileNameService);
         mBleService.queueReadCharacteristic(characteristic);
     }
 
-    public void getSongArtist() {
+    public void readSongArtist() {
+        Log.w(TAG, "Reading artist");
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_artist_characteristic, mGattFileNameService);
         mBleService.queueReadCharacteristic(characteristic);
     }
 
-    public void getSongGenre() {
-        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_metadata_genre_characteristic, mGattFileNameService);
-        mBleService.queueReadCharacteristic(characteristic);
-    }
-
-    public void getSongDisabled() {
-        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_disable_read_characteristic, mGattFileNameService);
-        mBleService.queueReadCharacteristic(characteristic);
-    }
-
-    public void setNextSongIndex(int index) {
+    public void writeSongIndex(int index) {
+        Log.w(TAG, "Writing index " + index);
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_index_characteristic, mGattFileNameService);
         mBleService.queueWriteCharacteristic(characteristic, index);
+        setCurrentSongIndex(index);
+    }
+
+    public void disableSong(int index, boolean disable) {
+        Log.w(TAG, "Disabling index " + index);
+        writeSongIndex(index);
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_disable_set_characteristic, mGattFileNameService);
+        mBleService.queueWriteCharacteristic(characteristic, disable);
     }
 
     public void connectGatt(BluetoothDevice device) {
@@ -247,7 +455,7 @@ public class DeviceController {
         return BluetoothProfile.STATE_DISCONNECTED;
     }
 
-    public boolean isReady() {
+    public boolean songsDownloaded() {
         return syncSongs.isComplete();
     }
 
@@ -257,18 +465,47 @@ public class DeviceController {
         }
     }
 
+    public void setSongChangedListener(SongChangedListener listener) {
+        mSongChangedListener = listener;
+    }
+
+    public void setDataDownloadedListener(DataDownloadedListener listener) {
+        mDataDownloadedListener = listener;
+    }
+
+    public void setVolumeChangedListener(VolumeChangedListener listener) {
+        mVolumeChangedListener = listener;
+    }
+
+    public void setPlaybackStateChanged(PlaybackStateListener listener) {
+        mPlaybackStateListener = listener;
+    }
+
+    public void setModeChangedListener(ModeChangedListener listener) {
+        mModeChangedListener = listener;
+    }
+
     public enum PlaybackMode {
-        SHUFFLE(0),
-        MOVIE(1),
-        MUSIC(2),
-        BOOK(3),
-        BELL(4),
-        MUTE(5);
+        ALL(0),
+        BELL(1),
+        MUTE(2),
+        MUSIC(3),
+        MOVIE(4),
+        BOOK(5);
 
         private final int value;
 
-        private PlaybackMode(int value) {
+        PlaybackMode(int value) {
             this.value = value;
+        }
+
+        public static PlaybackMode fromInteger(int x) {
+            if (x == BELL.getValue()) return BELL;
+            else if (x == MUTE.getValue()) return MUTE;
+            else if (x == MUSIC.getValue()) return MUSIC;
+            else if (x == MOVIE.getValue()) return MOVIE;
+            else if (x == BOOK.getValue()) return BOOK;
+            return ALL;
         }
 
         public int getValue() {
@@ -276,7 +513,27 @@ public class DeviceController {
         }
     }
 
+    public interface DataDownloadedListener {
+        void onDownloaded();
+    }
+
     public interface DeviceStatusChangeListener {
-        public void onChange(int status);
+        void onChange(int status);
+    }
+
+    public interface ModeChangedListener {
+        void onChange(PlaybackMode mode);
+    }
+
+    public interface SongChangedListener {
+        void onChange(int index);
+    }
+
+    public interface VolumeChangedListener {
+        void onChange(int volume);
+    }
+
+    public interface PlaybackStateListener {
+        void onChange(boolean playing);
     }
 }

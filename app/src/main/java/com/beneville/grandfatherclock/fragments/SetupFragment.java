@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import com.beneville.grandfatherclock.R;
 import com.beneville.grandfatherclock.fragments.setup.BluetoothUnsupportedFragment;
 import com.beneville.grandfatherclock.fragments.setup.ConnectingDeviceFragment;
-import com.beneville.grandfatherclock.fragments.setup.DownloadingDataFragment;
+import com.beneville.grandfatherclock.fragments.setup.DownloadingSongsFragment;
 import com.beneville.grandfatherclock.fragments.setup.EnableBluetoothFragment;
 import com.beneville.grandfatherclock.fragments.setup.EnablePermissionsFragment;
 import com.beneville.grandfatherclock.fragments.setup.ScanDevicesFragment;
@@ -36,8 +36,8 @@ public class SetupFragment extends Fragment {
             mStatus = bluetoothHelper.getStatus();
         }
 
-        if (mStatus == BluetoothHelper.STATUS.NONE) {
-            BaseFragment.startFragment(getContext(), new ControlFragment(), ControlFragment.class.getSimpleName());
+        if (!bluetoothHelper.needsSetupStep()) {
+            BaseFragment.startFragment(getContext(), new ControlFragment());
         }
 
         setStep(view);
@@ -62,8 +62,8 @@ public class SetupFragment extends Fragment {
             case CONNECTING:
                 showFragment(new ConnectingDeviceFragment());
                 break;
-            case DOWNLOADING:
-                showFragment(new DownloadingDataFragment());
+            case DOWNLOAD_SONGS:
+                showFragment(new DownloadingSongsFragment());
                 break;
         }
     }

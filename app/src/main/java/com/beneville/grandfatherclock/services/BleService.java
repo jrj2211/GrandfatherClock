@@ -144,11 +144,9 @@ public class BleService extends Service {
         final Intent intent = new Intent(action);
 
         final byte[] data = characteristic.getValue();
+        intent.putExtra(EXTRA_DATA, data);
+        intent.putExtra(CHARACTERISTIC, characteristic.getUuid().toString());
 
-        if (data != null && data.length > 0) {
-            intent.putExtra(EXTRA_DATA, data);
-            intent.putExtra(CHARACTERISTIC, characteristic.getUuid().toString());
-        }
         sendBroadcast(intent);
     }
 
@@ -312,6 +310,14 @@ public class BleService extends Service {
             return;
         }
 
+        if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) == 0 &&
+                (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) == 0 &&
+                (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE) == 0) {
+            Log.w(TAG, "Characteristic isn't writable" + characteristic.getUuid());
+            processCommandQueue();
+            return;
+        }
+
         characteristic.setValue(data);
         mBluetoothGatt.writeCharacteristic(characteristic);
     }
@@ -338,9 +344,11 @@ public class BleService extends Service {
                 mBluetoothGatt.writeDescriptor(descriptor);
             } else {
                 Log.e(TAG, "Provided characteristic is not NOTIFY - " + characteristic.getUuid().toString());
+                processCommandQueue();
             }
         } else {
             Log.e(TAG, "Failed to write to characteristic because it is null");
+            processCommandQueue();
         }
     }
 

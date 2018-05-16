@@ -85,7 +85,8 @@ public class LibraryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         int position = 0;
         for (ListItem info : mDataArray) {
             if (info instanceof MediaInfo) {
-                if (((MediaInfo) info).getName().charAt(0) >= ALPHABET[sectionIndex].charAt(0)) {
+                String name = ((MediaInfo) info).getName();
+                if (!name.isEmpty() && name.charAt(0) >= ALPHABET[sectionIndex].charAt(0)) {
                     break;
                 }
             }
@@ -113,18 +114,21 @@ public class LibraryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        holder.itemView.setOnClickListener(mDataArray.get(position).getOnClickListener());
+        ListItem item = mDataArray.get(position);
+        holder.itemView.setOnClickListener(item.getOnClickListener());
+        holder.itemView.setOnLongClickListener(item.getOnLongClickListener());
 
         switch (holder.getItemViewType()) {
             case ListItem.VIEW_TYPE_MEDIA:
                 MediaItemViewHolder holder_media = (MediaItemViewHolder) holder;
-                holder_media.setTitle(mDataArray.get(position).getName());
-                holder_media.setArtist(((MediaInfo) mDataArray.get(position)).getSong().getArtist());
-                holder_media.setType(((MediaInfo) mDataArray.get(position)).getSong().getMode());
+                holder_media.setTitle(((MediaInfo) item).getSong().getTitle());
+                holder_media.setArtist(((MediaInfo) item).getSong().getArtist());
+                holder_media.setType(((MediaInfo) item).getSong().getMode());
+                holder_media.setDisabled(((MediaInfo) item).getSong().isDisabled());
                 break;
             case ListItem.VIEW_TYPE_MENU_ITEM:
                 MenuItemViewHolder holder_menu = (MenuItemViewHolder) holder;
-                holder_menu.setName(mDataArray.get(position).getName());
+                holder_menu.setName(item.getName());
                 break;
         }
     }
@@ -139,12 +143,14 @@ public class LibraryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         public TextView mTitleView;
         public TextView mArtistView;
         public ImageView mImageView;
+        public TextView mDisabledView;
 
         public MediaItemViewHolder(View v) {
             super(v); // done this way instead of view tagging
             mTitleView = v.findViewById(R.id.library_item_title);
             mArtistView = v.findViewById(R.id.library_item_artist);
             mImageView = v.findViewById(R.id.library_item_icon);
+            mDisabledView = v.findViewById(R.id.library_item_disabled);
         }
 
         public void setTitle(String title) {
@@ -152,7 +158,16 @@ public class LibraryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         public void setArtist(String artist) {
-            mArtistView.setText(artist);
+            if (artist.isEmpty()) {
+                mArtistView.setVisibility(View.GONE);
+            } else {
+                mArtistView.setVisibility(View.VISIBLE);
+                mArtistView.setText(artist);
+            }
+        }
+
+        public void setDisabled(boolean disabled) {
+            mDisabledView.setVisibility(disabled ? View.VISIBLE : View.GONE);
         }
 
         public void setType(Song.ModeType type) {

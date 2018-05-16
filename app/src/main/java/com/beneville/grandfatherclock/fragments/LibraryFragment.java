@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,10 +16,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.beneville.grandfatherclock.MainActivity;
 import com.beneville.grandfatherclock.R;
 import com.beneville.grandfatherclock.adapters.LibraryListAdapter;
 import com.beneville.grandfatherclock.database.AppDatabase;
 import com.beneville.grandfatherclock.database.Song;
+import com.beneville.grandfatherclock.helpers.DeviceController;
 import com.beneville.grandfatherclock.library_items.ListItem;
 import com.beneville.grandfatherclock.library_items.MediaInfo;
 import com.beneville.grandfatherclock.library_items.MenuInfo;
@@ -42,12 +43,15 @@ public class LibraryFragment extends Fragment {
     private LibraryListAdapter adapter;
     private AppDatabase mDatabase;
     private EditText searchText;
+    private DeviceController mController;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_library, container, false);
+
+        mController = ((MainActivity) getActivity()).getDeviceController();
 
         mTitle = view.findViewById(R.id.title);
         itemsView = view.findViewById(R.id.library_items);
@@ -76,6 +80,15 @@ public class LibraryFragment extends Fragment {
         view.findViewById(R.id.back_arrow).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                View focused = getActivity().getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null && focused != null) {
+                        imm.hideSoftInputFromWindow(focused.getWindowToken(), 0);
+                    }
+                }
+
                 getActivity().onBackPressed();
             }
         });
@@ -109,10 +122,10 @@ public class LibraryFragment extends Fragment {
         return view;
     }
 
-    public void onClickCategory(String title, Song.ModeType mode) {
+    public void onClickCategory(String title, DeviceController.PlaybackMode mode) {
         Fragment fragment = new LibraryFragment();
         Bundle bundle = new Bundle();
-        bundle.putSerializable("mode", mode);
+        bundle.putSerializable("mode", Song.ModeType.GetFromPlaybackMode(mode));
         bundle.putString("title", title);
         fragment.setArguments(bundle);
 
@@ -126,25 +139,25 @@ public class LibraryFragment extends Fragment {
         data.add(new MenuInfo(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickCategory("ALL", Song.ModeType.ALL);
+                onClickCategory("ALL", DeviceController.PlaybackMode.ALL);
             }
         }, "All"));
         data.add(new MenuInfo(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickCategory("MUSIC & MUSICALS", Song.ModeType.MOVIE);
+                onClickCategory("MUSIC & MUSICALS", DeviceController.PlaybackMode.MUSIC);
             }
         }, "Music & Musicals"));
         data.add(new MenuInfo(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickCategory("MOVIES & TELEVISION", Song.ModeType.SONG);
+                onClickCategory("MOVIES & TELEVISION", DeviceController.PlaybackMode.MOVIE);
             }
         }, "Movies & Television"));
         data.add(new MenuInfo(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickCategory("HISTORY & LITERATURE", Song.ModeType.BOOK);
+                onClickCategory("HISTORY & LITERATURE", DeviceController.PlaybackMode.BOOK);
             }
         }, "History & Literature"));
 
@@ -155,7 +168,6 @@ public class LibraryFragment extends Fragment {
     public void showCategoryList(String title, Song.ModeType mode) {
         mTitle.setText(title);
         selector.setVisibility(View.VISIBLE);
-
         getSongs(mode);
     }
 
@@ -186,7 +198,7 @@ public class LibraryFragment extends Fragment {
             protected void onPostExecute(List<Song> songs) {
                 adapter.clearList();
                 for (Song song : songs) {
-                    adapter.addListItem(new MediaInfo(song));
+                    adapter.addListItem(new MediaInfo(song, mController, mDatabase));
                 }
                 adapter.notifyDataSetChanged();
             }
@@ -205,7 +217,7 @@ public class LibraryFragment extends Fragment {
             protected void onPostExecute(List<Song> songs) {
                 adapter.clearList();
                 for (Song song : songs) {
-                    adapter.addListItem(new MediaInfo(song));
+                    adapter.addListItem(new MediaInfo(song, mController, mDatabase));
                 }
                 adapter.notifyDataSetChanged();
             }

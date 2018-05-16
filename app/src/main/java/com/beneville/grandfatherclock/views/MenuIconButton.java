@@ -63,6 +63,10 @@ public class MenuIconButton extends RelativeLayout implements RelativeLayout.OnC
         this.setOnClickListener(this);
     }
 
+    public boolean isToggled() {
+        return toggled;
+    }
+
     public void setToggled(boolean t) {
         toggled = t;
         updateButtonView();
