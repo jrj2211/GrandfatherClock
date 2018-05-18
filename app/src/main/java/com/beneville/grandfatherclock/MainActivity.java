@@ -1,5 +1,6 @@
 package com.beneville.grandfatherclock;
 
+import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,11 +14,13 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.beneville.grandfatherclock.fragments.BaseFragment;
 import com.beneville.grandfatherclock.fragments.ControlFragment;
 import com.beneville.grandfatherclock.helpers.BluetoothHelper;
+import com.beneville.grandfatherclock.helpers.DeveloperDialog;
 import com.beneville.grandfatherclock.helpers.DeviceController;
 import com.beneville.grandfatherclock.helpers.KioskModeReceiver;
 import com.beneville.grandfatherclock.views.BatteryView;
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothHelper mBleHelper;
     DeviceController mDeviceController;
     Context mContext = this;
+    Activity mActivity = this;
 
     private int unlockKioskCount = 0;
     private long unlockKioskTime=0;
@@ -148,10 +152,9 @@ public class MainActivity extends AppCompatActivity {
                     unlockKioskCount++;
                 }
 
-                if (unlockKioskCount==10) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        stopLockTask();
-                    }
+                if (unlockKioskCount==8) {
+                    DeveloperDialog dialog = new DeveloperDialog(mActivity);
+                    dialog.show();
                 }
             }
         });
