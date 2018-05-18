@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -28,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
     BluetoothHelper mBleHelper;
     DeviceController mDeviceController;
     Context mContext = this;
+
+    private int unlockKioskCount = 0;
+    private long unlockKioskTime=0;
 
     private BluetoothHelper.BluetoothStateChangedCallback mBluetoothStateChanged = new BluetoothHelper.BluetoothStateChangedCallback() {
         @Override
@@ -91,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup a battery view
         new BatteryView((TextView) findViewById(R.id.battery_level), this);
-
-        lockDevice();
     }
 
     public DeviceController getDeviceController() {
@@ -131,6 +133,28 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         mDeviceController.registerGattReceiver(this);
+
+        lockDevice();
+
+        findViewById(R.id.clock).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long time= System.currentTimeMillis();
+
+                if (unlockKioskTime==0 || (time-unlockKioskTime> 3000) ) {
+                    unlockKioskTime=time;
+                    unlockKioskCount=1;
+                } else{
+                    unlockKioskCount++;
+                }
+
+                if (unlockKioskCount==10) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        stopLockTask();
+                    }
+                }
+            }
+        });
     }
 
     @Override
