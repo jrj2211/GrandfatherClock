@@ -199,7 +199,6 @@ public class ControlFragment extends Fragment {
             @Override
             public void onChange(PlaybackMode mode) {
                 highlightModeButton(mModeButtons.get(mode));
-                //mController.writePrevious(false);
             }
         });
     }

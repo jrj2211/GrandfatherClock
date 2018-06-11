@@ -183,6 +183,9 @@ public class MainActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             return true;
         }
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
         return super.onKeyDown(keyCode, event);
     }
 

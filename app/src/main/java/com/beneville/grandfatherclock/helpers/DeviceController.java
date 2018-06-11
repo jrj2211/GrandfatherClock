@@ -316,6 +316,7 @@ public class DeviceController {
             Log.w(TAG, "Changing mode to " + currentMode);
             if (mModeChangedListener != null) {
                 mModeChangedListener.onChange(currentMode);
+                readCurrentSongIndex();
             }
         }
     }
@@ -376,7 +377,6 @@ public class DeviceController {
         Log.w(TAG, "Writing mode: " + mode.getValue());
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_playback_mode_characteristic, mGattPlaybackService);
         mBleService.queueWriteCharacteristic(characteristic, mode.getValue());
-        readCurrentSongIndex();
         setCurrentPlaybackMode(mode);
         setCurrentPlaybackState(false);
     }
