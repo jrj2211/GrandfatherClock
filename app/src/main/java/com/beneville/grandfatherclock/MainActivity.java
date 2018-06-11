@@ -14,7 +14,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.beneville.grandfatherclock.fragments.BaseFragment;
@@ -191,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (am != null) {
             am.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0);
+            am.setRingerMode(AudioManager.RINGER_MODE_SILENT);
         }
     }
 }

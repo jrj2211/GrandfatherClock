@@ -132,6 +132,15 @@ public class SyncSongs {
     }
 
     private void artistRead(DeviceController controller) {
+        getDisabled(controller);
+    }
+
+    private void getDisabled(DeviceController controller) {
+        controller.readDisabled();
+    }
+
+    public void setDisabled(boolean disabled, DeviceController controller) {
+        mSong.setDisabled(disabled);
         nextSong();
         getSongInfo(controller);
     }

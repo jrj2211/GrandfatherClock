@@ -121,6 +121,8 @@ public class DeviceController {
                 } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_artist_characteristic))) {
                     byte[] bytes = intent.getByteArrayExtra(BleService.EXTRA_DATA);
                     syncSongs.setArtist(new String(bytes), DeviceController.this);
+                } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_file_name_disable_read_characteristic))) {
+                    syncSongs.setDisabled(GetIntFromIntent(intent) == 1, DeviceController.this);
                 } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_volume_characteristic))) {
                     setCurrentVolume(GetIntFromIntent(intent));
                 } else if (intent.getStringExtra(BleService.CHARACTERISTIC).equals(context.getString(R.string.gatt_playback_mode_characteristic))) {
@@ -418,6 +420,12 @@ public class DeviceController {
     public void readSongArtist() {
         Log.w(TAG, "Reading artist");
         BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_artist_characteristic, mGattFileNameService);
+        mBleService.queueReadCharacteristic(characteristic);
+    }
+
+    public void readDisabled() {
+        Log.w(TAG, "Reading disabled");
+        BluetoothGattCharacteristic characteristic = getCharacteristicFromService(R.string.gatt_file_name_disable_read_characteristic, mGattFileNameService);
         mBleService.queueReadCharacteristic(characteristic);
     }
 

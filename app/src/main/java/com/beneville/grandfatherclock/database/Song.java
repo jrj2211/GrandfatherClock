@@ -94,10 +94,12 @@ public class Song {
     }
 
     public void setArtist(String artist) {
+        artist = artist.replace("}", "é");
         this.artist = artist;
     }
 
     public void appendArtist(String artist) {
+        artist = artist.replace("}", "é");
         this.artist += artist;
     }
 
@@ -106,10 +108,12 @@ public class Song {
     }
 
     public void setTitle(String title) {
+        title = title.replace("}", "é");
         this.title = title;
     }
 
     public void appendTitle(String title) {
+        title = title.replace("}", "é");
         this.title += title;
     }
 
